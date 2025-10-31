@@ -4,7 +4,6 @@ export const userTypeDefs = gql`
   enum UserRole {
     ADMIN
     USER
-    VISITEUR
   }
 
   type User {

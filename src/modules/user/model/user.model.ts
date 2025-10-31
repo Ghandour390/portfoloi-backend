@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs';
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
-  VISITEUR = 'visiteur'
 }
 
 export interface IUser {

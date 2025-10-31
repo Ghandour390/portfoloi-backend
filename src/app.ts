@@ -1,5 +1,6 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
+import { graphqlUploadExpress } from 'graphql-upload';
 // connect to the database
 import { connectDB } from './config/database';
 // import typeDefs and resolvers de users
@@ -34,11 +35,13 @@ import { formationTypeDefs } from './modules/formation/graphql/formation.typedef
 import { formationResolvers } from './modules/formation/graphql/formation.resolvers';
 import { documentTypeDefs } from './modules/document/graphql/document.typedefs';
 import { documentResolvers } from './modules/document/graphql/document.resolvers';
+import { GraphQLUpload } from 'graphql-upload';
 
 export const app = express();
 
 app.use(cors());
-
+// enable graphql file uploads (graphql-upload middleware)
+app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 5 }));
 
 app.use((req, res, next) => {
   if (req.path === '/graphql') return next();
@@ -75,6 +78,7 @@ const startServer = async () => {
       documentTypeDefs
     ],
     resolvers: [
+      { Upload: GraphQLUpload },
       userResolvers,
       socialNetworkResolvers,
       competenceResolvers,

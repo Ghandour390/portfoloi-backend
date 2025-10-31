@@ -1,4 +1,6 @@
 import { IContext } from "../../../shared/types";
+import { ensureBucket } from '../../../shared/minioClient';
+
 export const documentResolvers = {
   Query: {
     getDocument: async (
@@ -23,23 +25,52 @@ export const documentResolvers = {
   Mutation: {
     createDocument: async (
       _: any,
-      { input }: { input: any },
+      { file, nom }: { file: any; nom?: string },
       { user, services: { documentService } }: IContext
     ) => {
       if (!user?.id) {
         throw new Error('Authentication required');
       }
-      return documentService.createDocument(user.id, input);
+
+      // Ensure bucket exists
+      await ensureBucket();
+
+      // file is a Upload scalar — it may be a promise
+      const uploaded = await file;
+      const { filename, createReadStream, mimetype } = uploaded;
+
+      // Upload to MinIO and create DB record
+      return documentService.createDocument(user.id, {
+        filename: nom || filename,
+        mimetype,
+        stream: createReadStream(),
+      });
     },
+
     updateDocument: async (
       _: any,
-      { id, input }: { id: string; input: any },
+      { id, file, nom }: { id: string; file?: any; nom?: string },
       { user, services: { documentService } }: IContext
     ) => {
       if (!user?.id) {
         throw new Error('Authentication required');
       }
-      return documentService.updateDocument(user.id, id, input);
+
+      // If a new file is provided, upload it
+      if (file) {
+        await ensureBucket();
+        const uploaded = await file;
+        const { filename, createReadStream, mimetype } = uploaded;
+
+        return documentService.updateDocument(user.id, id, {
+          filename: nom || filename,
+          mimetype,
+          stream: createReadStream(),
+        });
+      } else {
+        // Only update the name if no file provided
+        return documentService.updateDocumentMetadata(user.id, id, { nom });
+      }
     },
     deleteDocument: async (
       _: any,

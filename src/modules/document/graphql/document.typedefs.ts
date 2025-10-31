@@ -1,6 +1,8 @@
 import { gql } from 'apollo-server-express';
 
 export const documentTypeDefs = gql`
+  scalar Upload
+
   type Document {
     _id: ID!
     nom: String!
@@ -9,8 +11,8 @@ export const documentTypeDefs = gql`
   }
 
   input DocumentInput {
-    nom: String!
-    urlStocket: String!
+    nom: String
+    urlStocket: String
   }
 
   input DocumentUpdateInput {
@@ -24,8 +26,10 @@ export const documentTypeDefs = gql`
   }
 
   type Mutation {
-    createDocument(input: DocumentInput!): Document!
-    updateDocument(id: ID!, input: DocumentUpdateInput!): Document!
+    # Create document with file upload (file is required, nom is optional)
+    createDocument(file: Upload!, nom: String): Document!
+    # Update document with optional file replacement
+    updateDocument(id: ID!, file: Upload, nom: String): Document!
     deleteDocument(id: ID!): Boolean!
   }
 `;
