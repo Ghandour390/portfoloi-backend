@@ -1,5 +1,5 @@
 import { Request } from 'express';
-// jwt types not used directly here
+
 
 import { UserService } from '../modules/user/service/user.service';
 import { SocialNetworkService } from '../modules/social/service/social.service';

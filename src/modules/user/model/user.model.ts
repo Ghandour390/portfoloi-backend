@@ -1,11 +1,18 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+  VISITEUR = 'visiteur'
+}
+
 export interface IUser {
   nom: string;
   prenom: string;
   email: string;
   password: string;
+  role: UserRole;
   image?: string;
   dateNaissance: Date;
   cover?: string;
@@ -20,6 +27,12 @@ const userSchema = new Schema<IUser>({
   prenom: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  role: { 
+    type: String, 
+    enum: Object.values(UserRole), 
+    default: UserRole.USER,
+    required: true 
+  },
   image: { type: String },
   dateNaissance: { type: Date, required: true },
   cover: { type: String },

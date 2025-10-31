@@ -34,13 +34,13 @@ export class UserService {
     const refreshExpires = (process.env.REFRESH_TOKEN_EXPIRES || '7d') as string;
 
     const accessToken = (jwt as any).sign(
-      { id: userId, email: user.email, type: 'access' },
+      { id: userId, email: user.email, role: user.role, type: 'access' },
       accessSecret as string,
       { expiresIn: accessExpires }
     );
 
     const refreshToken = (jwt as any).sign(
-      { id: userId, email: user.email, type: 'refresh' },
+      { id: userId, email: user.email, role: user.role, type: 'refresh' },
       refreshSecret as string,
       { expiresIn: refreshExpires }
     );
@@ -86,7 +86,7 @@ export class UserService {
       const accessExpires = (process.env.ACCESS_TOKEN_EXPIRES || process.env.JWT_EXPIRATION || '15m') as string;
 
       const newAccessToken = (jwt as any).sign(
-        { id: (user as any)._id || userId, email: user.email, type: 'access' },
+        { id: (user as any)._id || userId, email: user.email, role: user.role, type: 'access' },
         accessSecret as string,
         { expiresIn: accessExpires }
       );
@@ -94,7 +94,7 @@ export class UserService {
       // Optionally rotate refresh token (simple approach: reissue a new one)
       const refreshExpires = (process.env.REFRESH_TOKEN_EXPIRES || '7d') as string;
       const newRefreshToken = (jwt as any).sign(
-        { id: (user as any)._id || userId, email: user.email, type: 'refresh' },
+        { id: (user as any)._id || userId, email: user.email, role: user.role, type: 'refresh' },
         refreshSecret as string,
         { expiresIn: refreshExpires }
       );

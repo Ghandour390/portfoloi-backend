@@ -1,6 +1,12 @@
 import jwt from 'jsonwebtoken';
-import { AuthenticationError } from 'apollo-server-express';
+import { AuthenticationError, ForbiddenError } from 'apollo-server-express';
 import { Request } from 'express';
+
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+  VISITEUR = 'visiteur'
+}
 
 export const verifyAccessToken = (req: Request) => {
   const authHeader = req.headers.authorization;
@@ -18,7 +24,7 @@ export const verifyAccessToken = (req: Request) => {
     const user = (jwt as any).verify(token, secret as string);
     return user as any;
   } catch (error) {
-    // Log the verification error for debugging and satisfy linter (avoid unused catch param)
+ 
     // eslint-disable-next-line no-console
     console.error('JWT verification error:', error);
     throw new AuthenticationError('Invalid/Expired token');
@@ -35,4 +41,28 @@ export const verifyRefreshToken = (refreshToken: string) => {
     console.error('Refresh token verification error:', error);
     throw new AuthenticationError('Invalid/Expired refresh token');
   }
+};
+
+export const requireAuth = (user: any) => {
+  if (!user) {
+    throw new AuthenticationError('Not authenticated');
+  }
+};
+
+export const requireRole = (user: any, roles: UserRole[]) => {
+  if (!user) {
+    throw new AuthenticationError('Not authenticated');
+  }
+  if (!roles.includes(user.role)) {
+    throw new ForbiddenError('You do not have permission to perform this action');
+  }
+};
+
+export const isAdmin = (user: any): boolean => {
+  return user && user.role === UserRole.ADMIN;
+};
+
+export const isOwnerOrAdmin = (user: any, resourceUserId: string): boolean => {
+  if (!user) return false;
+  return user.role === UserRole.ADMIN || user.id === resourceUserId;
 };

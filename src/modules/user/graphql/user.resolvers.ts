@@ -1,19 +1,23 @@
 import { IContext } from '../../../shared/types';
 import { AuthenticationError } from 'apollo-server-express';
+import { requireAuth, requireRole, UserRole } from '../../../shared/auth';
 
 export const userResolvers = {
 
   Query: {
     user: async (_: any, { id }: { id: string }, { user, services }: IContext) => {
-      if (!user) throw new AuthenticationError('Not authenticated');
+      requireAuth(user);
       return services.userService.getUserById(id);
     },
     users: async (_: any, __: any, { user, services }: IContext) => {
-      if (!user) throw new AuthenticationError('Not authenticated');
+      requireRole(user, [UserRole.ADMIN]);
       return services.userService.getAllUsers();
     },
     me: async (_: any, __: any, { user, services }: IContext) => {
-      if (!user) throw new AuthenticationError('Not authenticated');
+      requireAuth(user);
+      if (!user) {
+        throw new AuthenticationError('You must be logged in.');
+      }
       return services.userService.getUserById(user.id);
     },
   },
@@ -32,11 +36,15 @@ export const userResolvers = {
       return services.userService.refreshAccessToken(token);
     },
     updateUser: async (_: any, { id, input }: { id: string; input: any }, { user, services }: IContext) => {
-      if (!user) throw new AuthenticationError('Not authenticated');
+      requireAuth(user);
+      // Only admin or the user themselves can update
+      if (user!.role !== UserRole.ADMIN && user!.id !== id) {
+        throw new AuthenticationError('Not authorized to update this user');
+      }
       return services.userService.updateUser(id, input);
     },
     deleteUser: async (_: any, { id }: { id: string }, { user, services }: IContext) => {
-      if (!user) throw new AuthenticationError('Not authenticated');
+      requireRole(user, [UserRole.ADMIN]);
       return services.userService.deleteUser(id);
     },
   },
