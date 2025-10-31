@@ -1,0 +1,74 @@
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import { connectDB } from './config/database';
+import { userTypeDefs } from './modules/user/graphql/user.typedefs';
+import { userResolvers } from './modules/user/graphql/user.resolvers';
+import { socialNetworkTypeDefs } from './modules/social/graphql/social.typedefs';
+import { socialNetworkResolvers } from './modules/social/graphql/social.resolvers';
+import { competenceTypeDefs } from './modules/competence/graphql/competence.typedefs';
+import { competenceResolvers } from './modules/competence/graphql/competence.resolvers';
+import { verifyToken } from './shared/auth';
+import cors from 'cors';
+
+// Import repositories and services
+import { UserRepository } from './modules/user/repository/user.repository';
+import { UserService } from './modules/user/service/user.service';
+import { SocialNetworkRepository } from './modules/social/repository/social.repository';
+import { SocialNetworkService } from './modules/social/service/social.service';
+import { CompetenceRepository } from './modules/competence/repository/competence.repository';
+import { CompetenceService } from './modules/competence/service/competence.service';
+
+export const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Create instances of repositories and services
+const userRepository = new UserRepository();
+const userService = new UserService(userRepository);
+
+const socialNetworkRepository = new SocialNetworkRepository();
+const socialNetworkService = new SocialNetworkService(socialNetworkRepository);
+
+const competenceRepository = new CompetenceRepository();
+const competenceService = new CompetenceService(competenceRepository);
+
+const startServer = async () => {
+  const server = new ApolloServer({
+    typeDefs: [userTypeDefs, socialNetworkTypeDefs, competenceTypeDefs],
+    resolvers: [userResolvers, socialNetworkResolvers, competenceResolvers],
+    context: ({ req }) => {
+      const token = req.headers.authorization?.split(' ')[1];
+      const user = token ? verifyToken(req) : null;
+      return { 
+        req, 
+        user,
+        services: {
+          userService,
+          socialNetworkService,
+          competenceService
+        }
+      };
+    },
+  });
+
+  await server.start();
+
+  server.applyMiddleware({ 
+    app,
+    path: '/graphql'
+  });
+
+  const PORT = process.env.PORT || 4000;
+
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
+  });
+};
+
+startServer().catch((error) => {
+  console.error('Error starting server:', error);
+});

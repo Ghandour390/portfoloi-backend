@@ -1,0 +1,76 @@
+services:
+
+  portfolio-backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    volumes:
+      - .:/app
+      - /app/node_modules 
+    env_file:
+      - .env.docker
+    depends_on:
+      - mongo 
+      - redis 
+      - maildev
+    networks:
+      - portfolio-network
+
+
+  mongo:
+    image: mongo:6.0
+    command: mongod --port ${MONGODB_PORT:-27017}
+    ports:
+      - "${MONGODB_PORT:-27017}:${MONGODB_PORT:-27017}"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - portfolio-network
+
+  # Service pour Redis
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379" 
+    volumes:
+      - redis-data:/data 
+    networks:
+      - portfolio-network
+
+  # Service pour MinIO (stockage de fichiers compatible S3)
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "${MINIO_PORT:-9000}:${MINIO_PORT:-9000}"  # API MinIO
+      - "9001:9001"  # Console MinIO
+    env_file:
+      - .env.docker
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-password}
+    volumes:
+      - minio-data:/data  # Persistance des données MinIO
+    command: server --console-address ":9001" /data
+    networks:
+      - portfolio-network
+    # Note: healthcheck removed because some MinIO images don't include `mc` command.
+
+  # MailDev - simple SMTP server for development/testing
+  maildev:
+    image: maildev/maildev:latest
+    ports:
+      - "1025:1025" # SMTP
+      - "1080:1080" # Web UI
+    networks:
+      - portfolio-network
+
+volumes:
+  mongo-data: {}
+  redis-data: {}
+  minio-data: {}
+
+networks:
+  portfolio-network:
+    driver: bridge
