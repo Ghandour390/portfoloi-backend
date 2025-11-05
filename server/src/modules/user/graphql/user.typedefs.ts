@@ -1,17 +1,13 @@
 import { gql } from 'apollo-server-express';
 
 export const userTypeDefs = gql`
-  enum UserRole {
-    ADMIN
-    USER
-  }
+
 
   type User {
     id: ID!
     nom: String!
     prenom: String!
     email: String!
-    role: UserRole!
     image: String
     dateNaissance: String!
     cover: String
@@ -32,11 +28,10 @@ export const userTypeDefs = gql`
     prenom: String!
     email: String!
     password: String!
-    role: UserRole
     image: String
-    dateNaissance: String!
+    dateNaissance: String
     cover: String
-    adresse: String!
+    adresse: String
     biographie: String!
   }
 
@@ -44,7 +39,6 @@ export const userTypeDefs = gql`
     nom: String
     prenom: String
     email: String
-    role: UserRole
     image: String
     dateNaissance: String
     cover: String
