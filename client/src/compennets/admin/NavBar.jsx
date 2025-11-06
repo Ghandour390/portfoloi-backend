@@ -1,28 +1,44 @@
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import './NavBar.css';
 
 export default function NavBar() {
+  const navLinks = [
+    { to: '/', label: 'Home' },
+    { to: '/project', label: 'Project' },
+    { to: '/skills', label: 'Skills' },
+    { to: '/experience', label: 'Experience' },
+    { to: '/contact', label: 'Contact' },
+  ];
+
   return (
-    <nav className="bg-[#0f1729] p-4 text-white fixed top-0 left-0 w-full z-10">
-      <div className="container mx-auto flex justify-between items-center">
+  <nav className="navbar-animated px-8 py-3 text-white w-full z-20 border-b border-[#232323] fixed top-0 left-0">
+      <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center">
-          <h1 className="text-lg font-bold">mon portfolio</h1>
+          <span className="text-2xl font-bold text-[#ffc72c] mr-12 cursor-pointer">Portfolio</span>
         </div>
-         <ul className="flex ml-8">
-            <li className="mr-4">
-              <Link to="/" className="hover:text-gray-300">Home</Link>
+        <ul className="flex gap-8 items-center">
+          {navLinks.map((link) => (
+            <li key={link.to}>
+              <NavLink
+                to={link.to}
+                className={({ isActive }) =>
+                  `font-semibold transition-colors duration-200 px-2 pb-1 ${
+                    isActive
+                      ? 'text-[#ffc72c] border-b-2 border-[#ffc72c]'
+                      : 'text-[#f5eec5] hover:text-[#ffc72c]'
+                  }`
+                }
+                end={link.to === '/'}
+              >
+                {link.label}
+              </NavLink>
             </li>
-            <li className="mr-4">
-              <Link to="/about" className="hover:text-gray-300">About</Link>
-            </li>
-            <li className="mr-4">
-              <Link to="/contact" className="hover:text-gray-300">Contact</Link>
-            </li>
-          </ul>
-        <div>
-          <Link to="/login" className="bg-[#55828b] text-[#e0b1cb] px-4 py-2 rounded hover:bg-[#fc892c]">Login</Link>
-        </div>
+          ))}
+        </ul>
       </div>
     </nav>
+
   );
 }

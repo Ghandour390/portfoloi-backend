@@ -1,0 +1,19 @@
+/* Animation de dégradé de couleurs pour la navbar */
+
+.navbar-animated {
+  background: linear-gradient(270deg, #191a1d, #23232b, #23232b, #191a1d, #2a2a32, #191a1d, #ffc72c22, #191a1d);
+  background-size: 300% 300%;
+  animation: navbarGradientMove 10s ease-in-out infinite;
+}
+
+@keyframes navbarGradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
